@@ -1,9 +1,6 @@
 mod littlepath;
 
 use std::env;
-use std::fs;
-use std::vec;
-use std::path::Path;
 use std::path::PathBuf;
 use path_absolutize::*;
 
