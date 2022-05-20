@@ -4,9 +4,9 @@ use std::path::PathBuf;
 use std::path::Component;
 use std::str::FromStr;
 
-struct Candidate {
-    path: PathBuf,
-    cost: usize,
+pub struct Candidate {
+    pub path: PathBuf,
+    pub cost: usize,
 }
 
 impl Clone for Candidate {
@@ -18,7 +18,7 @@ impl Clone for Candidate {
     }
 }
 
-pub fn resolve(query: PathBuf, relative_to: PathBuf) {
+pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
   let mut candidates: Vec<Candidate> = vec![
     Candidate {
       // Although this is the starting value, it might change based on the
@@ -109,10 +109,5 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) {
   candidates
     .sort_by(|a, b| a.cost.cmp(b.cost.borrow()));
 
-  for item in candidates {
-    match item.path.to_str() {
-      Some(value) => println!("{}", value),
-      None => (),
-    }
-  }
+  candidates
 }
