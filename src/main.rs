@@ -3,7 +3,6 @@ mod littlepath;
 use std::env;
 use std::path::PathBuf;
 use clap::{Parser, ArgEnum};
-use littlepath::Candidate;
 use path_absolutize::*;
 
 /// Use little paths to address your files and directories.
