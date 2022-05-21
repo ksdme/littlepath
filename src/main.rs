@@ -2,7 +2,7 @@ mod littlepath;
 
 use std::env;
 use std::path::PathBuf;
-use clap::{Parser, ArgEnum};
+use clap::{Parser};
 use path_absolutize::*;
 
 /// Use little paths to address your files and directories.
@@ -13,36 +13,12 @@ struct Args {
     #[clap(short, long, default_value = ".")]
     base_directory: String,
 
-    /// WIP. Return all matching paths.
-    #[clap(short, long, arg_enum, default_value_t = Mode::All)]
-    mode: Mode,
-
-    /// WIP. If there are multiple paths tied with the top match score, exit
-    /// with an error code.
+    /// Only output the very first match.
     #[clap(short, long)]
-    ensure_single_match: bool,
+    first: bool,
 
     /// littlepath to expand.
     query: String,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-enum Mode {
-    /// Return all matching paths.
-    All,
-
-    /// Return all matches tied with the top match score.
-    AllTop,
-
-    /// Resolve the tie for the top match by selecting the longest path.
-    /// In case multiple paths exist with the same longest length,
-    /// one of them is picked.
-    Longest,
-
-    /// Resolve the tie for the top match by selecting the shortest path.
-    /// In case multiple paths exist with the same longest length,
-    /// one of them is picked.
-    Shortest,
 }
 
 fn main() {
@@ -69,6 +45,10 @@ fn main() {
         match absolute_candidate.to_str() {
             Some(value) => println!("{}", value),
             None => (),
+        }
+
+        if args.first {
+            break;
         }
     }
 }
