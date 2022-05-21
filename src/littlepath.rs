@@ -92,6 +92,9 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
             .into_string()
             .unwrap();
 
+          let entity_name_length = entity_name
+            .len();
+
           let match_score = matcher
             .fuzzy_match(&entity_name.to_lowercase(), &partial_name);
 
@@ -99,7 +102,10 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
             let mut clone = candidate.clone();
 
             clone.path.push(entity_name);
-            clone.score += value;
+
+            // The longer the string, the lesser it is scored.
+            // TODO: The length cost should have a better factor.
+            clone.score += value - i64::try_from(entity_name_length).unwrap_or(0);
 
             next_level_candidates.push(clone);
           }
