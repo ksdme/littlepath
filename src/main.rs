@@ -62,7 +62,11 @@ fn main() {
     // TODO: Implement all the modes and flags mentioned above instead of always
     // printing all the matches.
     for candidate in littlepath::resolve(query, relative_to) {
-        match candidate.path.to_str() {
+        let absolute_candidate = candidate.path
+            .absolutize()
+            .unwrap();
+
+        match absolute_candidate.to_str() {
             Some(value) => println!("{}", value),
             None => (),
         }
