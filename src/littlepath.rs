@@ -3,17 +3,19 @@ use std::fs;
 use std::path::PathBuf;
 use std::path::Component;
 use std::str::FromStr;
+use fuzzy_matcher::FuzzyMatcher;
+use fuzzy_matcher::skim::SkimMatcherV2;
 
 pub struct Candidate {
     pub path: PathBuf,
-    pub cost: usize,
+    pub score: i64,
 }
 
 impl Clone for Candidate {
     fn clone(&self) -> Self {
         Self {
           path: self.path.clone(),
-          cost: self.cost.clone(),
+          score: self.score.clone(),
         }
     }
 }
@@ -24,9 +26,12 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
       // Although this is the starting value, it might change based on the
       // configuration of the query component.
       path: relative_to,
-      cost: 0,
+      score: 0,
     }
   ];
+
+  // Fuzzy Search.
+  let matcher = SkimMatcherV2::default();
 
   for query_component in query.components() {
     let mut next_level_candidates: Vec<Candidate> = Vec::new();
@@ -43,7 +48,7 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
       else if Component::RootDir == query_component {
         next_level_candidates.push(Candidate {
           path: PathBuf::from_str("/").unwrap(),
-          cost: 0,
+          score: 0,
         });
       }
 
@@ -87,15 +92,14 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
             .into_string()
             .unwrap();
 
-          let matched = entity_name
-            .to_lowercase()
-            .find(&partial_name);
+          let match_score = matcher
+            .fuzzy_match(&entity_name.to_lowercase(), &partial_name);
 
-          if let Some(value) = matched {
+          if let Some(value) = match_score {
             let mut clone = candidate.clone();
 
             clone.path.push(entity_name);
-            clone.cost += value;
+            clone.score += value;
 
             next_level_candidates.push(clone);
           }
@@ -107,7 +111,7 @@ pub fn resolve(query: PathBuf, relative_to: PathBuf) -> Vec<Candidate> {
   }
 
   candidates
-    .sort_by(|a, b| a.cost.cmp(b.cost.borrow()));
+    .sort_by(|a, b| b.score.cmp(a.score.borrow()));
 
   candidates
 }
